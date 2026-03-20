@@ -31,10 +31,17 @@ python main.py --mode dryrun --strategy v2.1
 python main.py --mode live --strategy v2.1
 ```
 
-## 🛠️ Strategy Selection
-- `v2`: Original Three-Candle Pivot Breakout (Fixed SL).
-- `v2.1`: Optimized Three-Candle (200 EMA Filter + ATR-based Risk Management).
+### 2. Strategy Selection
+You can choose which logic the bot follows:
+*   `v2`: Original Three-Candle Pivot Breakout (Fixed SL).
+*   `v2.1`: **(Recommended)** Optimized Three-Candle with 200 EMA + ATR Risk.
+*   `vwap`: Trend-following based on VWAP crossings and RSI confirmation.
+*   `cpr`: Structural trading using Central Pivot Range (CPR) breakouts.
 
+Run with:
+```bash
+python main.py --mode dryrun --strategy vwap
+```
 ## 🔔 Notifications
 Enable Telegram notifications by adding these to your `.env`:
 - `TELEGRAM_BOT_TOKEN`: Get this from [@BotFather](https://t.me/BotFather) by using `/newbot`.

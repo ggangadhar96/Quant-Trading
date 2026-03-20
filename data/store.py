@@ -28,7 +28,7 @@ class DataStore:
             # We crossed into a new bucket. Publish the old candle if it exists.
             if self.current_candle:
                 # Add the finalized time to the candle object
-                self.current_candle['time'] = self.current_start.time()
+                self.current_candle['time'] = self.current_start
                 await self.strategy.on_bar(self.current_candle)
             
             # Start a new candle

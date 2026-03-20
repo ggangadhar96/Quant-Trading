@@ -44,7 +44,8 @@ class ThreeCandleV2_1(BaseStrategy):
         
         curr_ema = df['ema'].iloc[-1]
         curr_atr = df['atr'].iloc[-1]
-        candle_time = bar['time']
+        candle_dt = bar['time']
+        candle_time = candle_dt.time()
 
         # 1. Phase 1: Anchor (09:15-09:30)
         if candle_time == time(9, 15):

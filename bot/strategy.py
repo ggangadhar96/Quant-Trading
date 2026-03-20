@@ -18,7 +18,8 @@ class ThreeCandleV2Live(BaseStrategy):
 
     async def on_bar(self, bar):
         """ Runs every 15 minutes when a candle fully closes. """
-        candle_time = bar['time']
+        candle_dt = bar['time']
+        candle_time = candle_dt.time()
         
         # 1. Phase 1: Anchor (09:15-09:30)
         if candle_time == time(9, 15):

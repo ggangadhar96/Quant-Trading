@@ -14,6 +14,8 @@ if sys.stdout.encoding != 'utf-8':
 from infra.broker import UpstoxAPI
 from bot.strategy import ThreeCandleV2Live
 from bot.strategy_v2_1 import ThreeCandleV2_1
+from bot.strategy_vwap import VWAPStrategy
+from bot.strategy_cpr import CPRStrategy
 from bot.executor import StrategyExecutor
 
 from backtest.engine import BacktestEngine
@@ -63,7 +65,7 @@ async def run_live(config, mode, strategy_class):
 async def main():
     parser = argparse.ArgumentParser(description="Three-Candle Zero Drift Bot")
     parser.add_argument("--mode", choices=['live', 'dryrun', 'backtest'], default='dryrun', help="Execution mode")
-    parser.add_argument("--strategy", choices=['v2', 'v2.1'], default='v2.1', help="Strategy version")
+    parser.add_argument("--strategy", choices=['v2', 'v2.1', 'vwap', 'cpr'], default='v2.1', help="Strategy version")
     args = parser.parse_args()
 
     load_dotenv()
@@ -73,11 +75,13 @@ async def main():
     str_cfg = config['strategy']
     
     # Strategy Selection
-    strategies = {
-        'v2': ThreeCandleV2Live,
-        'v2.1': ThreeCandleV2_1
-    }
-    selected_strategy = strategies[args.strategy]
+    STRATEGY_MAP = {
+    'v2': ThreeCandleV2Live,
+    'v2.1': ThreeCandleV2_1,
+    'vwap': VWAPStrategy,
+    'cpr': CPRStrategy
+}
+    selected_strategy = STRATEGY_MAP[args.strategy]
 
     if args.mode == 'backtest':
         csv_path = "data/csv/NIFTY50_15min_6months.csv"
