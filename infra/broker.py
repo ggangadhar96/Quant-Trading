@@ -21,9 +21,12 @@ class UpstoxAPI:
                  params: Optional[Dict[str, Any]] = None, 
                  data: Optional[Dict[str, Any]] = None,
                  json_payload: Optional[Dict[str, Any]] = None,
-                 headers: Optional[Dict[str, str]] = None) -> Any:
+                 headers: Optional[Dict[str, str]] = None,
+                 version: str = 'v2') -> Any:
         
-        url = f"{self.BASE_URL}{endpoint}"
+        # Support for different base versions (e.g., v3)
+        base_url = self.BASE_URL.replace('/v2', f'/{version}')
+        url = f"{base_url}{endpoint}"
         req_headers = {}
         if headers:
             req_headers.update(headers)

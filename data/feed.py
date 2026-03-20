@@ -24,8 +24,9 @@ class UpstoxMarketData:
     def get_authorized_ws_url(self) -> str:
         """
         Calls the Upstox API to get the authorized WebSocket URL.
+        Uses V3 as V2 is deprecated.
         """
-        response = self.api_client._request('GET', '/feed/market-data-feed/authorize')
+        response = self.api_client._request('GET', '/feed/market-data-feed/authorize', version='v3')
         if 'data' in response and 'authorizedRedirectUri' in response['data']:
             return response['data']['authorizedRedirectUri']
         raise ValueError(f"Failed to get authorized URL: {response}")

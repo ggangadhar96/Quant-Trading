@@ -1,6 +1,7 @@
 import logging
 from bot.state import BotState
 from bot.risk import RiskManager
+from infra.notify import Notifier
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +15,15 @@ class StrategyExecutor:
         self.broker = broker
         self.state = BotState()
         self.risk = RiskManager()
+        self.notifier = Notifier()
         
     def execute_entry(self, symbol, side, qty, price, target, sl, timestamp):
         if not self.risk.can_trade(self.state.realized_pnl):
             return False
             
+        # Map side to Upstox standard
+        api_side = 'BUY' if side.upper() in ['BUY', 'LONG'] else 'SELL'
+        
         # Build Upstox API standard payload
         upstox_payload = {
             "quantity": qty,
@@ -28,7 +33,7 @@ class StrategyExecutor:
             "tag": "3CandleBot",
             "instrument_token": symbol,
             "order_type": "MARKET",
-            "transaction_type": side.upper(), # 'BUY' or 'SELL'
+            "transaction_type": api_side,
             "disclosed_quantity": 0,
             "trigger_price": 0,
             "is_amo": False
@@ -39,9 +44,13 @@ class StrategyExecutor:
             if self.broker:
                 self.broker.place_order(upstox_payload)
         elif self.mode == 'dryrun':
-            logger.info(f"[DRYRUN] Simulated Entry: {order_data}")
+            logger.info(f"[DRYRUN] Simulated Entry: {upstox_payload}")
             
         self.state.open_position(side, price, target, sl, qty, symbol)
+        
+        # Notify
+        msg = f"🚀 <b>ENTRY: {side}</b>\nSymbol: {symbol}\nPrice: {price}\nSL: {sl:.2f}\nTgt: {target:.2f}"
+        self.notifier.send(msg)
         return True
 
     def execute_exit(self, exit_px, exit_reason, timestamp):
@@ -72,3 +81,7 @@ class StrategyExecutor:
             logger.info(f"[DRYRUN] Simulated EXIT ({exit_reason}) @ {exit_px}")
             
         self.state.close_position(exit_px)
+        
+        # Notify
+        msg = f"🏁 <b>EXIT: {exit_reason}</b>\nPrice: {exit_px}\nNet: {self.state.trade_history[-1]['pnl']:.2f} pts"
+        self.notifier.send(msg)

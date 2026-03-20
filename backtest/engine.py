@@ -32,9 +32,16 @@ class BacktestEngine:
             
             # Simulate intra-bar ticks (Open -> High -> Low -> Close)
             await self.store.process_tick(row['Open'], ts_ms)
+            if not self.strategy.risk.can_trade(self.executor.state.realized_pnl): break
+            
             await self.store.process_tick(row['High'], ts_ms)
+            if not self.strategy.risk.can_trade(self.executor.state.realized_pnl): break
+            
             await self.store.process_tick(row['Low'], ts_ms)
+            if not self.strategy.risk.can_trade(self.executor.state.realized_pnl): break
+            
             await self.store.process_tick(row['Close'], ts_ms)
+            if not self.strategy.risk.can_trade(self.executor.state.realized_pnl): break
             
         logger.info(f"Backtest completed in {ptime.time() - start_t:.2f} seconds.")
         calculate_metrics(self.executor.state, logging)

@@ -13,6 +13,7 @@ if sys.stdout.encoding != 'utf-8':
 
 from infra.broker import UpstoxAPI
 from bot.strategy import ThreeCandleV2Live
+from bot.strategy_v2_1 import ThreeCandleV2_1
 from bot.executor import StrategyExecutor
 
 from backtest.engine import BacktestEngine
@@ -22,7 +23,7 @@ from data.store import DataStore
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-async def run_live(config, mode):
+async def run_live(config, mode, strategy_class):
     access_token = os.getenv("UPSTOX_ACCESS_TOKEN")
     if not access_token:
         raise ValueError("Missing UPSTOX_ACCESS_TOKEN in .env")
@@ -31,7 +32,7 @@ async def run_live(config, mode):
     
     # 1. Core Bot Initialization
     executor = StrategyExecutor(mode=mode, broker=api)
-    strategy = ThreeCandleV2Live(config['instrument'], config['pivot_levels'], executor)
+    strategy = strategy_class(config['instrument'], config['pivot_levels'], executor, config=config)
     
     # 2. Time Bucket / Market Data Store
     store = DataStore(strategy, bucket_minutes=15)
@@ -62,6 +63,7 @@ async def run_live(config, mode):
 async def main():
     parser = argparse.ArgumentParser(description="Three-Candle Zero Drift Bot")
     parser.add_argument("--mode", choices=['live', 'dryrun', 'backtest'], default='dryrun', help="Execution mode")
+    parser.add_argument("--strategy", choices=['v2', 'v2.1'], default='v2.1', help="Strategy version")
     args = parser.parse_args()
 
     load_dotenv()
@@ -69,13 +71,22 @@ async def main():
         config = yaml.safe_load(f)
 
     str_cfg = config['strategy']
+    
+    # Strategy Selection
+    strategies = {
+        'v2': ThreeCandleV2Live,
+        'v2.1': ThreeCandleV2_1
+    }
+    selected_strategy = strategies[args.strategy]
 
     if args.mode == 'backtest':
         csv_path = "data/csv/NIFTY50_15min_6months.csv"
-        engine = BacktestEngine(ThreeCandleV2Live, str_cfg['instrument'], csv_path, str_cfg['pivot_levels'])
+        engine = BacktestEngine(selected_strategy, str_cfg['instrument'], csv_path, str_cfg['pivot_levels'])
+        # Pass config to backtest strategy
+        engine.strategy = selected_strategy(str_cfg['instrument'], str_cfg['pivot_levels'], engine.executor, config=str_cfg)
         await engine.run()
     else:
-        await run_live(str_cfg, args.mode)
+        await run_live(str_cfg, args.mode, selected_strategy)
 
 if __name__ == "__main__":
     asyncio.run(main())
