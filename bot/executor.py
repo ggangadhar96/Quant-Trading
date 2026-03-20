@@ -46,11 +46,12 @@ class StrategyExecutor:
         elif self.mode == 'dryrun':
             logger.info(f"[DRYRUN] Simulated Entry: {upstox_payload}")
             
-        self.state.open_position(side, price, target, sl, qty, symbol)
+        self.state.open_position(side, price, target, sl, qty, symbol, timestamp=timestamp)
         
         # Notify
-        msg = f"🚀 <b>ENTRY: {side}</b>\nSymbol: {symbol}\nPrice: {price}\nSL: {sl:.2f}\nTgt: {target:.2f}"
-        self.notifier.send(msg)
+        if self.mode != 'backtest':
+            msg = f"🚀 <b>ENTRY: {side}</b>\nSymbol: {symbol}\nPrice: {price}\nSL: {sl:.2f}\nTgt: {target:.2f}"
+            self.notifier.send(msg)
         return True
 
     def execute_exit(self, exit_px, exit_reason, timestamp):
@@ -80,8 +81,9 @@ class StrategyExecutor:
         elif self.mode == 'dryrun':
             logger.info(f"[DRYRUN] Simulated EXIT ({exit_reason}) @ {exit_px}")
             
-        self.state.close_position(exit_px)
+        self.state.close_position(exit_px, timestamp=timestamp)
         
         # Notify
-        msg = f"🏁 <b>EXIT: {exit_reason}</b>\nPrice: {exit_px}\nNet: {self.state.trade_history[-1]['pnl']:.2f} pts"
-        self.notifier.send(msg)
+        if self.mode != 'backtest':
+            msg = f"🏁 <b>EXIT: {exit_reason}</b>\nPrice: {exit_px}\nNet: {self.state.trade_history[-1]['pnl']:.2f} pts"
+            self.notifier.send(msg)

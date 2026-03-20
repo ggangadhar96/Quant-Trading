@@ -16,15 +16,16 @@ class BotState:
         self.total_trades: int = 0
         self.trade_history: List[Dict[str, Any]] = []
         
-    def open_position(self, side: str, px: float, target: float, sl: float, qty: int = 0, symbol: Optional[str] = None):
+    def open_position(self, side: str, px: float, target: float, sl: float, qty: int = 0, symbol: Optional[str] = None, timestamp: Any = None):
         self.position = side
         self.entry_px = px
         self.target_px = target
         self.sl_px = sl
         self.qty = qty
         self.symbol = symbol
+        self.entry_time = timestamp
         
-    def close_position(self, exit_px: float):
+    def close_position(self, exit_px: float, timestamp: Any = None):
         pnl_pts = 0.0
         if self.position == 'LONG':
             pnl_pts = (exit_px - self.entry_px)
@@ -40,7 +41,9 @@ class BotState:
             'entry': self.entry_px,
             'exit': exit_px,
             'pnl': pnl_pts,
-            'symbol': self.symbol
+            'symbol': self.symbol,
+            'entry_time': self.entry_time,
+            'exit_time': timestamp
         })
         
         self.position = None

@@ -34,7 +34,8 @@ def calculate_vwap(df: pd.DataFrame) -> pd.Series:
     
     # If we have dates, group by day to reset VWAP
     if 'time' in df.columns:
-        dates = pd.to_datetime(df['time']).dt.date
+        # Foolproof date extraction: take first 10 chars of string representation (YYYY-MM-DD)
+        dates = df['time'].astype(str).str[:10]
         pv = typical_price * volume
         return pv.groupby(dates).cumsum() / volume.groupby(dates).cumsum()
     

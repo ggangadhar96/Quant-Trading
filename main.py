@@ -25,6 +25,14 @@ from data.store import DataStore
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
 
+# Global Strategy Registry
+STRATEGY_MAP = {
+    'v2': ThreeCandleV2Live,
+    'v2.1': ThreeCandleV2_1,
+    'vwap': VWAPStrategy,
+    'cpr': CPRStrategy
+}
+
 async def run_live(config, mode, strategy_class):
     access_token = os.getenv("UPSTOX_ACCESS_TOKEN")
     if not access_token:
@@ -74,13 +82,6 @@ async def main():
 
     str_cfg = config['strategy']
     
-    # Strategy Selection
-    STRATEGY_MAP = {
-    'v2': ThreeCandleV2Live,
-    'v2.1': ThreeCandleV2_1,
-    'vwap': VWAPStrategy,
-    'cpr': CPRStrategy
-}
     selected_strategy = STRATEGY_MAP[args.strategy]
 
     if args.mode == 'backtest':
