@@ -1,0 +1,6 @@
+strategy:
+  name: "ThreeCandleV2Live"
+  instrument: "NSE_INDEX|Nifty 50"
+  lot_size: 25
+  # Demo pivots, should be dynamically updated via history script daily
+  pivot_levels: [23800, 23900, 24000, 24100, 24200]
